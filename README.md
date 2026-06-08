@@ -51,7 +51,7 @@ That executable checks whether Python is available, installs the latest Python r
 ### Windows installer/launcher
 
 If you want a double-clickable entry point that also installs the build to your user profile, use [`dist/TKDevToolsLauncher.exe`](dist/TKDevToolsLauncher.exe).
-It includes the current app build inside the launcher, copies it to `%LOCALAPPDATA%\TKDevTools\app`, keeps that installation updated when the build folder is available, and then starts the installed executable.
+It downloads the latest TK Dev Tools release from GitHub, copies it to `%LOCALAPPDATA%\TKDevTools\app`, keeps that installation updated from the repository release, and then starts the installed executable.
 
 If you still want the plain script version, [`TKDevTools-InstallAndLaunch.bat`](TKDevTools-InstallAndLaunch.bat) does the same thing.
 
