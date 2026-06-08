@@ -1,5 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+from PyInstaller.building.datastruct import Tree
+
 
 a = Analysis(
     ['installer_launcher.py'],
@@ -14,6 +16,8 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
+app_tree = Tree('dist/TKDevTools', prefix='TKDevTools')
+a.datas += app_tree
 pyz = PYZ(a.pure)
 
 exe = EXE(

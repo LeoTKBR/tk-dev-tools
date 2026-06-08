@@ -24,18 +24,25 @@ def _base_dir() -> Path:
     return Path(__file__).resolve().parent
 
 
+def _resource_dir() -> Path:
+    if hasattr(sys, "_MEIPASS"):
+        return Path(sys._MEIPASS)  # type: ignore[attr-defined]
+    return _base_dir()
+
+
 def _bundle_dir() -> Path | None:
-    base = _base_dir()
-    direct = base / "TKDevTools"
-    if (direct / "TKDevTools.exe").exists():
-        return direct
+    search_roots = (_resource_dir(), _base_dir())
+    for root in search_roots:
+        direct = root / "TKDevTools"
+        if (direct / "TKDevTools.exe").exists():
+            return direct
 
-    dist_build = base / "dist" / "TKDevTools"
-    if (dist_build / "TKDevTools.exe").exists():
-        return dist_build
+        dist_build = root / "dist" / "TKDevTools"
+        if (dist_build / "TKDevTools.exe").exists():
+            return dist_build
 
-    if (base / "TKDevTools.exe").exists():
-        return base
+        if (root / "TKDevTools.exe").exists():
+            return root
 
     return None
 
