@@ -45,17 +45,20 @@ def _install_requirements(requirements: list[str]) -> bool:
 
 
 def _run_qt_bootstrap_or_main():
-    from PySide6 import QtWidgets
+    from PySide6 import QtCore, QtWidgets
 
     from bootstrap_ui import DependencyBootstrapWindow, apply_bootstrap_theme
 
     app = QtWidgets.QApplication(sys.argv)
     apply_bootstrap_theme(app)
+    app.setQuitOnLastWindowClosed(False)
 
     def launch_main_window():
         from qt_ui import show_main_window
 
-        show_main_window(app)
+        window = show_main_window(app)
+        app.setQuitOnLastWindowClosed(True)
+        return window
 
     missing = get_missing_requirements(REQUIRED_REQUIREMENTS)
     if not missing:
@@ -65,11 +68,11 @@ def _run_qt_bootstrap_or_main():
     window = DependencyBootstrapWindow(missing)
 
     def on_completed(success: bool):
-        window.close()
         if not success:
             app.quit()
             return
         launch_main_window()
+        QtCore.QTimer.singleShot(0, window.close)
 
     window.completed.connect(on_completed)
     window.show()
