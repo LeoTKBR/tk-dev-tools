@@ -84,13 +84,11 @@ class DependencyInstallerWorker(QtCore.QObject):
     log_line = QtCore.Signal(str)
     progress_mode_changed = QtCore.Signal(bool)
     finished = QtCore.Signal(bool, str)
-    ready_to_cancel = QtCore.Signal(bool)
 
     def __init__(self, requirements: list[RequirementStatus]):
         super().__init__()
         self._requirements = requirements
         self._process: subprocess.Popen | None = None
-        self._cancel_requested = False
 
     def _log_requirement_summary(self, requirement: RequirementStatus):
         if requirement.installed_version is None:
@@ -113,7 +111,6 @@ class DependencyInstallerWorker(QtCore.QObject):
 
             self.status_changed.emit("Downloading and installing missing packages...")
             self.progress_mode_changed.emit(True)
-            self.ready_to_cancel.emit(True)
 
             command = [
                 sys.executable,
@@ -142,17 +139,6 @@ class DependencyInstallerWorker(QtCore.QObject):
                 line = line.rstrip()
                 if line:
                     self.log_line.emit(line)
-                if self._cancel_requested:
-                    break
-
-            if self._cancel_requested and process.poll() is None:
-                process.terminate()
-                try:
-                    process.wait(timeout=10)
-                except subprocess.TimeoutExpired:
-                    process.kill()
-                    process.wait()
-                raise RuntimeError("Installation was canceled by the user.")
 
             return_code = process.wait()
             if return_code != 0:
@@ -168,19 +154,12 @@ class DependencyInstallerWorker(QtCore.QObject):
             self.finished.emit(False, str(exc))
         finally:
             self._process = None
-            self.ready_to_cancel.emit(False)
             self.progress_mode_changed.emit(False)
-
-    @QtCore.Slot()
-    def cancel(self):
-        self._cancel_requested = True
-        process = self._process
-        if process is not None and process.poll() is None:
-            process.terminate()
 
 
 class DependencyBootstrapWindow(QtWidgets.QDialog):
     completed = QtCore.Signal(bool)
+    open_tools_requested = QtCore.Signal()
 
     def __init__(self, requirements: list[RequirementStatus] | None = None):
         super().__init__()
@@ -241,15 +220,15 @@ class DependencyBootstrapWindow(QtWidgets.QDialog):
 
         self.close_button = QtWidgets.QPushButton("Close")
         self.close_button.setEnabled(False)
-        self.close_button.clicked.connect(self.close)
+        self.close_button.clicked.connect(self._quit_application)
 
-        self.cancel_button = QtWidgets.QPushButton("Cancel installation")
-        self.cancel_button.setEnabled(False)
-        self.cancel_button.clicked.connect(self.cancel_installation)
+        self.open_tools_button = QtWidgets.QPushButton("Open tools")
+        self.open_tools_button.setEnabled(False)
+        self.open_tools_button.clicked.connect(self._request_open_tools)
 
         footer = QtWidgets.QHBoxLayout()
         footer.addStretch(1)
-        footer.addWidget(self.cancel_button)
+        footer.addWidget(self.open_tools_button)
         footer.addWidget(self.close_button)
 
         layout = QtWidgets.QVBoxLayout(self)
@@ -269,7 +248,6 @@ class DependencyBootstrapWindow(QtWidgets.QDialog):
         self._worker.status_changed.connect(self.status_label.setText)
         self._worker.log_line.connect(self._append_log)
         self._worker.progress_mode_changed.connect(self._set_progress_mode)
-        self._worker.ready_to_cancel.connect(self.cancel_button.setEnabled)
         self._worker.finished.connect(self._on_finished)
         self._worker.finished.connect(self._thread.quit)
         self._worker.finished.connect(self._worker.deleteLater)
@@ -293,19 +271,24 @@ class DependencyBootstrapWindow(QtWidgets.QDialog):
         lines.extend(f"- {requirement.requirement}" for requirement in self._requirements)
         return "\n".join(lines)
 
-    def cancel_installation(self):
-        if self._worker is None:
-            return
+    def _request_open_tools(self):
+        self.open_tools_requested.emit()
 
-        self.cancel_button.setEnabled(False)
-        self.status_label.setText("Canceling installation...")
-        self._worker.cancel()
+    def _quit_application(self):
+        app = QtWidgets.QApplication.instance()
+        if app is not None:
+            app.quit()
+        else:
+            self.close()
 
     def _on_finished(self, success: bool, message: str):
         self._set_progress_mode(False)
-        self.status_label.setText(message)
+        if success:
+            self.status_label.setText(f"{message} Press Open tools to continue.")
+        else:
+            self.status_label.setText(message)
+        self.open_tools_button.setEnabled(success)
         self.close_button.setEnabled(True)
-        self.cancel_button.setEnabled(False)
         self.completed.emit(success)
 
     def closeEvent(self, event):

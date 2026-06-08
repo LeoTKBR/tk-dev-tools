@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import subprocess
 import sys
+from pathlib import Path
 
 from dependency_bootstrap import REQUIRED_REQUIREMENTS, get_missing_requirements, parse_requirement
 
@@ -45,7 +46,7 @@ def _install_requirements(requirements: list[str]) -> bool:
 
 
 def _run_qt_bootstrap_or_main():
-    from PySide6 import QtCore, QtWidgets
+    from PySide6 import QtWidgets
 
     from bootstrap_ui import DependencyBootstrapWindow, apply_bootstrap_theme
 
@@ -67,14 +68,12 @@ def _run_qt_bootstrap_or_main():
 
     window = DependencyBootstrapWindow(missing)
 
-    def on_completed(success: bool):
-        if not success:
-            app.quit()
-            return
-        launch_main_window()
-        QtCore.QTimer.singleShot(0, window.close)
+    def on_open_tools():
+        launcher_path = Path(__file__).resolve()
+        subprocess.Popen([sys.executable, str(launcher_path)], cwd=str(launcher_path.parent))
+        app.quit()
 
-    window.completed.connect(on_completed)
+    window.open_tools_requested.connect(on_open_tools)
     window.show()
     app._bootstrap_window = window
     sys.exit(app.exec())
