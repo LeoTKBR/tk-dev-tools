@@ -42,6 +42,11 @@ python qt_ui.py
 
 If the environment is missing dependencies, launch `launcher.py` first so it can install them and then open the main window automatically.
 
+### Windows launcher
+
+If you want a double-clickable entry point on Windows, use [`tk-dev-tools.bat`](tk-dev-tools.bat).
+It checks whether Python is available, installs the latest Python runtime manager through WinGet if needed, and then launches the project.
+
 ## Interface
 
 The main window was arranged so the most important actions stay visible:
