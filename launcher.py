@@ -48,14 +48,18 @@ def _run_qt_bootstrap_or_main():
     from PySide6 import QtWidgets
 
     from bootstrap_ui import DependencyBootstrapWindow, apply_bootstrap_theme
-    from qt_ui import show_main_window
 
     app = QtWidgets.QApplication(sys.argv)
     apply_bootstrap_theme(app)
 
+    def launch_main_window():
+        from qt_ui import show_main_window
+
+        show_main_window(app)
+
     missing = get_missing_requirements(REQUIRED_REQUIREMENTS)
     if not missing:
-        show_main_window(app)
+        launch_main_window()
         sys.exit(app.exec())
 
     window = DependencyBootstrapWindow(missing)
@@ -65,7 +69,7 @@ def _run_qt_bootstrap_or_main():
         if not success:
             app.quit()
             return
-        show_main_window(app)
+        launch_main_window()
 
     window.completed.connect(on_completed)
     window.show()
