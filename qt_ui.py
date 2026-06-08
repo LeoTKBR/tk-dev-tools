@@ -19,7 +19,13 @@ from generation_core import ProgressEvent, build_item_frames, build_jobs, collec
 from spr_core import SpriteManager
 
 
-APP_DIR = Path(__file__).resolve().parent
+def _resource_dir() -> Path:
+    if hasattr(sys, "_MEIPASS"):
+        return Path(sys._MEIPASS)  # type: ignore[attr-defined]
+    return Path(__file__).resolve().parent
+
+
+APP_DIR = _resource_dir()
 APP_ICON_PATH = APP_DIR / "icon.png"
 LOADING_IMAGE_PATH = APP_DIR / "loading.png"
 GITHUB_REPO_OWNER = "LeoTKBR"
@@ -51,6 +57,27 @@ def _git_blob_sha_for_bytes(data: bytes) -> str:
 
 def _git_blob_sha_for_file(path: Path) -> str:
     return _git_blob_sha_for_bytes(path.read_bytes())
+
+
+def _force_window_foreground(window: QtWidgets.QWidget):
+    window.showNormal()
+    window.setWindowState(window.windowState() & ~QtCore.Qt.WindowState.WindowMinimized)
+    window.raise_()
+    window.activateWindow()
+    app = QtWidgets.QApplication.instance()
+    if app is not None:
+        app.setActiveWindow(window)
+
+    if sys.platform == "win32":
+        try:
+            import ctypes
+
+            hwnd = int(window.winId())
+            ctypes.windll.user32.ShowWindow(hwnd, 9)
+            ctypes.windll.user32.SetForegroundWindow(hwnd)
+            ctypes.windll.user32.BringWindowToTop(hwnd)
+        except Exception:
+            pass
 
 
 def apply_dark_theme(app: QtWidgets.QApplication):
@@ -295,6 +322,7 @@ def show_splash_then_start(app: QtWidgets.QApplication, on_finished):
 class ItemImageFramesWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
+        self._foreground_requested = False
         self.setWindowTitle("TK Dev Tools")
         self.resize(980, 760)
 
@@ -786,6 +814,14 @@ class ItemImageFramesWindow(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         event.accept()
 
+    def showEvent(self, event):
+        super().showEvent(event)
+        if self._foreground_requested:
+            return
+
+        self._foreground_requested = True
+        QtCore.QTimer.singleShot(0, lambda: _force_window_foreground(self))
+
 
 def show_main_window(app: QtWidgets.QApplication):
     apply_dark_theme(app)
@@ -798,7 +834,7 @@ def show_main_window(app: QtWidgets.QApplication):
         window.setWindowIcon(icon)
 
     def show_window():
-        window.show()
+        _force_window_foreground(window)
         app._main_window = window
 
     show_splash_then_start(app, show_window)

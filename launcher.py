@@ -8,8 +8,15 @@ from pathlib import Path
 from dependency_bootstrap import REQUIRED_REQUIREMENTS, get_missing_requirements, parse_requirement
 
 
+WINDOWS_HIDE_CONSOLE = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+
+
 def _is_pyside6_available() -> bool:
     return importlib.util.find_spec("PySide6") is not None
+
+
+def _is_frozen_app() -> bool:
+    return bool(getattr(sys, "frozen", False))
 
 
 def _install_requirements(requirements: list[str]) -> bool:
@@ -34,6 +41,7 @@ def _install_requirements(requirements: list[str]) -> bool:
         encoding="utf-8",
         errors="replace",
         bufsize=1,
+        creationflags=WINDOWS_HIDE_CONSOLE,
     )
 
     assert process.stdout is not None
@@ -49,28 +57,35 @@ def _run_qt_bootstrap_or_main():
     from PySide6 import QtWidgets
 
     from bootstrap_ui import DependencyBootstrapWindow, apply_bootstrap_theme
+    from qt_ui import show_main_window
 
     app = QtWidgets.QApplication(sys.argv)
     apply_bootstrap_theme(app)
-    app.setQuitOnLastWindowClosed(False)
+    app.setQuitOnLastWindowClosed(True)
 
-    def launch_main_window():
-        from qt_ui import show_main_window
+    if _is_frozen_app():
+        show_main_window(app)
+        sys.exit(app.exec())
 
-        window = show_main_window(app)
-        app.setQuitOnLastWindowClosed(True)
-        return window
+    if "--main" in sys.argv[1:]:
+        show_main_window(app)
+        sys.exit(app.exec())
 
     missing = get_missing_requirements(REQUIRED_REQUIREMENTS)
     if not missing:
-        launch_main_window()
+        show_main_window(app)
         sys.exit(app.exec())
 
+    app.setQuitOnLastWindowClosed(False)
     window = DependencyBootstrapWindow(missing)
 
     def on_open_tools():
         launcher_path = Path(__file__).resolve()
-        subprocess.Popen([sys.executable, str(launcher_path)], cwd=str(launcher_path.parent))
+        subprocess.Popen(
+            [sys.executable, str(launcher_path), "--main"],
+            cwd=str(launcher_path.parent),
+            creationflags=WINDOWS_HIDE_CONSOLE,
+        )
         app.quit()
 
     window.open_tools_requested.connect(on_open_tools)
@@ -80,6 +95,14 @@ def _run_qt_bootstrap_or_main():
 
 
 def main():
+    if _is_frozen_app():
+        _run_qt_bootstrap_or_main()
+        return
+
+    if "--main" in sys.argv[1:]:
+        _run_qt_bootstrap_or_main()
+        return
+
     missing = get_missing_requirements(REQUIRED_REQUIREMENTS)
     if not missing:
         _run_qt_bootstrap_or_main()

@@ -42,10 +42,23 @@ python qt_ui.py
 
 If the environment is missing dependencies, launch `launcher.py` first so it can install them and then open the main window automatically.
 
+### Windows executable
+
+If you want the packaged app itself, open [`dist/TKDevTools/TKDevTools.exe`](dist/TKDevTools/TKDevTools.exe).
+The release folder must keep its companion files together, including `_internal`.
+That executable checks whether Python is available, installs the latest Python runtime manager through WinGet if needed, downloads or updates the repository into a local `tools` folder, and then waits for you to open the main app.
+
+### Windows installer/launcher
+
+If you want a double-clickable entry point that also installs the build to your user profile, use [`dist/TKDevToolsLauncher.exe`](dist/TKDevToolsLauncher.exe).
+It copies the current build to `%LOCALAPPDATA%\TKDevTools\app`, keeps that installation updated when the build folder is available, and then starts the installed executable.
+
+If you still want the plain script version, [`TKDevTools-InstallAndLaunch.bat`](TKDevTools-InstallAndLaunch.bat) does the same thing.
+
 ### Windows launcher
 
-If you want a double-clickable entry point on Windows, use [`tk-dev-tools.bat`](tk-dev-tools.bat).
-It checks whether Python is available, installs the latest Python runtime manager through WinGet if needed, and then launches the project.
+If you want the repository bootstrapper, use [`tk-dev-tools.bat`](tk-dev-tools.bat).
+It checks whether Python is available, installs the latest Python runtime manager through WinGet if needed, downloads the repository files if they are missing, and then launches the project.
 
 ## Interface
 

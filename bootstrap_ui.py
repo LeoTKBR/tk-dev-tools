@@ -9,8 +9,15 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from dependency_bootstrap import REQUIRED_REQUIREMENTS, RequirementStatus, get_missing_requirements
 
 
-APP_DIR = Path(__file__).resolve().parent
+def _resource_dir() -> Path:
+    if hasattr(sys, "_MEIPASS"):
+        return Path(sys._MEIPASS)  # type: ignore[attr-defined]
+    return Path(__file__).resolve().parent
+
+
+APP_DIR = _resource_dir()
 APP_ICON_PATH = APP_DIR / "icon.png"
+WINDOWS_HIDE_CONSOLE = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
 
 def apply_bootstrap_theme(app: QtWidgets.QApplication):
@@ -131,6 +138,7 @@ class DependencyInstallerWorker(QtCore.QObject):
                 encoding="utf-8",
                 errors="replace",
                 bufsize=1,
+                creationflags=WINDOWS_HIDE_CONSOLE,
             )
             self._process = process
 
