@@ -11,6 +11,7 @@ from urllib.request import Request, urlopen
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from bootstrap_ui import apply_bootstrap_theme
+from dependency_bootstrap import REQUIRED_REQUIREMENTS, get_missing_requirements
 
 
 REPO_OWNER = "LeoTKBR"
@@ -111,8 +112,12 @@ def launch_launcher() -> None:
     if not launcher.exists():
         raise RuntimeError("launcher.py was not found inside the tools folder.")
 
+    args = [*python_cmd, str(launcher)]
+    if not get_missing_requirements(REQUIRED_REQUIREMENTS):
+        args.append("--main")
+
     subprocess.Popen(
-        [*python_cmd, str(launcher)],
+        args,
         cwd=str(tools_dir()),
         creationflags=WINDOWS_HIDE_CONSOLE,
     )
