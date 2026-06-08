@@ -22,6 +22,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     name='TKDevToolsLauncher',
+    icon='icon.png',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

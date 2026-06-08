@@ -51,6 +51,25 @@ def local_state_file() -> Path:
     return tools_dir() / ".repo-sha"
 
 
+def bootstrap_icon_path() -> Path | None:
+    candidates = (
+        app_base_dir() / "_internal" / "icon.png",
+        app_base_dir() / "icon.png",
+        app_base_dir() / "tools" / "icon.png",
+    )
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def load_bootstrap_icon() -> QtGui.QIcon:
+    icon_path = bootstrap_icon_path()
+    if icon_path is None:
+        return QtGui.QIcon()
+    return QtGui.QIcon(str(icon_path))
+
+
 def http_get_json(url: str) -> dict:
     request = Request(url, headers={"User-Agent": "TK-Dev-Tools-Bootstrap"})
     with urlopen(request, timeout=30) as response:
@@ -201,6 +220,9 @@ class BootstrapWorker(QtCore.QObject):
 class BootstrapWindow(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
+        icon = load_bootstrap_icon()
+        if not icon.isNull():
+            self.setWindowIcon(icon)
         self.setWindowTitle("TK Dev Tools Bootstrap")
         self.setMinimumSize(820, 540)
 
@@ -314,6 +336,9 @@ class BootstrapWindow(QtWidgets.QDialog):
 def main():
     app = QtWidgets.QApplication(sys.argv)
     apply_bootstrap_theme(app)
+    icon = load_bootstrap_icon()
+    if not icon.isNull():
+        app.setWindowIcon(icon)
     window = BootstrapWindow()
     window.show()
     app.exec()

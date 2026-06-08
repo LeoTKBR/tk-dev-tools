@@ -24,6 +24,7 @@ exe = EXE(
     a.scripts,
     [],
     name='TKDevTools',
+    icon='icon.png',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
