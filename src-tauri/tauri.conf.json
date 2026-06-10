@@ -1,0 +1,34 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "TK Dev Tools",
+  "mainBinaryName": "TK Dev Tools",
+  "version": "0.1.0",
+  "identifier": "com.leotk.tkdevtools",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "TK Dev Tools",
+        "width": 800,
+        "height": 600
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "copyright": "Copyright © 2026 TK Dev Core. All rights reserved.",
+    "icon": [
+      "../public/icon.png",
+      "icons/icon.ico"
+    ]
+  }
+}

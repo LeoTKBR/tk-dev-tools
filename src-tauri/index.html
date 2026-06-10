@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0a0809" />
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <title>TK Dev Tools</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        width: 100%;
+        background:
+          radial-gradient(circle at top left, rgba(226, 123, 72, 0.25), transparent 30%),
+          radial-gradient(circle at top right, rgba(69, 105, 147, 0.25), transparent 28%),
+          linear-gradient(180deg, #110f10 0%, #171316 45%, #0d0b0c 100%);
+      }
+
+      body {
+        overflow: hidden;
+      }
+
+      #root {
+        min-height: 100vh;
+      }
+
+      .boot-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(circle at top, rgba(242, 196, 142, 0.16), transparent 30%),
+          radial-gradient(circle at bottom right, rgba(69, 105, 147, 0.12), transparent 34%),
+          #0a0809;
+        opacity: 1;
+        animation: boot-splash-cycle 4s ease forwards;
+      }
+
+      .boot-splash img {
+        width: min(240px, 42vw);
+        height: min(240px, 42vw);
+        object-fit: contain;
+        animation: boot-splash-art 4s ease forwards;
+      }
+
+      @keyframes boot-splash-cycle {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+
+      @keyframes boot-splash-art {
+        0% {
+          opacity: 0;
+          transform: scale(0.96);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        100% {
+          opacity: 0;
+          transform: scale(1.02);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="boot-splash" aria-hidden="true">
+      <img src="/loading.png" alt="" />
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

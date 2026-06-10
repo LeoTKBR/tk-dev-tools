@@ -1,140 +1,71 @@
 # TK Dev Tools
 
 <p align="center">
-  <img src="icon.png" alt="TK Dev Tools" width="180">
+  <img src="public/icon.png" alt="TK Dev Tools" width="180" />
 </p>
-
-**TK Dev Tools** is a set of tools designed to make the daily work of an OTAdmin easier.
-
-The project is meant to grow over time and collect useful utilities in one place, with a simple, direct, and easy-to-maintain interface.
-Right now the app is still in its early stage and the available module is the **GIF Generator**, but the foundation is ready for more tools in the future.
-
-## What it does today
-
-At the moment TK Dev Tools offers:
-
-- item GIF generation directly from `SPR` and `DAT` files
-- a top bar with quick actions
-- a button to open the project Discord servers
-- a button to check file integrity against the official GitHub repository
-- an optional log panel that is disabled by default
 
 ## Requirements
 
-- Python 3.10+
-- internet access for the first launch if dependencies are missing
+- Windows 10 or newer
+- Node.js 22+
+- Rust toolchain with `cargo`
+- Tauri CLI dependencies installed through `npm install`
 
-The launcher now checks the environment automatically and installs any missing Python packages before opening the main app.
+## How to Use
 
-## How to run
-
-You can start the app with:
-
-```bash
-python launcher.py
-```
-
-If you prefer, you can also open the Qt window directly with:
+### Development
 
 ```bash
-python qt_ui.py
+npm install
+npm run tauri dev
 ```
 
-If the environment is missing dependencies, launch `launcher.py` first so it can install them and then open the main window automatically.
+### Production Build
 
-### Windows executable
+```bash
+npm run tauri build
+```
 
-If you want the packaged app itself, open [`dist/TKDevTools/TKDevTools.exe`](dist/TKDevTools/TKDevTools.exe).
-The release folder must keep its companion files together, including `_internal`.
-That executable checks whether Python is available, installs the latest Python runtime manager through WinGet if needed, downloads or updates the repository into a local `tools` folder, and then waits for you to open the main app.
+The release build generates:
 
-### Windows installer/launcher
+- `src-tauri/target/release/TK Dev Tools.exe`
+- installer bundles under `src-tauri/target/release/bundle/`
 
-If you want a double-clickable entry point that also installs the build to your user profile, use [`dist/TKDevToolsLauncher.exe`](dist/TKDevToolsLauncher.exe).
-It shows a bootstrap window, downloads the latest TK Dev Tools source from GitHub, copies it to `%LOCALAPPDATA%\TKDevTools\app`, keeps that installation updated from the repository, and then waits for you to press **Open Tools**.
+## Project Details
 
-If you still want the plain script version, [`TKDevTools-InstallAndLaunch.bat`](TKDevTools-InstallAndLaunch.bat) does the same thing.
+TK Dev Tools is a Tauri-based desktop app that currently serves as the migration shell for the original toolkit.
 
-### Windows launcher
+### Current Focus
 
-If you want the repository bootstrapper, use [`tk-dev-tools.bat`](tk-dev-tools.bat).
-It checks whether Python is available, installs the latest Python runtime manager through WinGet if needed, downloads the repository files if they are missing, and then launches the project.
+- React UI shell for the app workspace
+- Rust command bridge for file selection, generation, logs, and integrity checks
+- Windows packaging with branded icon and installer output
 
-## Interface
+### Main Features
 
-The main window was arranged so the most important actions stay visible:
+- GIF generator workspace
+- Integrity check against the upstream repository
+- File pickers for SPR, DAT, and output folders
+- Progress events and live logs
+- About dialog and branded app shell
 
-- **Enable/Disable log**: shows or hides the log panel. It starts disabled by default.
-- **About**: shows project information and the creator credit.
-- **Discord**: opens a menu with the project servers.
-- **Check integrity**: compares the local files with the official repository and automatically restores any divergent or missing file.
+### Screenshots
 
-### Project Discords
+<p align="center">
+  <img src="screenshot/gif_generator.png" alt="GIF Generator" width="100%" />
+  <br />
+  <sub>GIF Generator</sub>
+</p>
 
-- **Canary**: https://discord.gg/gvTj5sh9Mp
-- **TK Dev**: https://discord.gg/rj97H4JD3k
+### Branding and Packaging
 
-## GIF Generator
+- App title: `TK Dev Tools`
+- Executable name: `TK Dev Tools.exe`
+- Main icon source: `public/icon.png`
+- Bundle icons generated into `src-tauri/icons/`
 
-The current module of the project is **GIF Generator**, which reads Tibia client files and generates animated GIFs for items.
+### Notes
 
-It uses:
-
-- `SPR file`
-- `DAT file`
-
-The output is saved as `items/<client_id>.gif` inside the chosen output folder.
-
-### What it is for
-
-This feature is useful for:
-
-- generating visual previews of items
-- building item catalogs and item lists with images
-- automating a task that is usually manual and repetitive
-
-### How to use it
-
-1. Open the application.
-2. Select the client version.
-3. Choose the `SPR` file.
-4. Choose the `DAT` file.
-5. Set the output folder.
-6. Adjust the options you want.
-7. Click **Generate GIFs**.
-
-### Available options
-
-- **Only pickable items**: generates only items that can be picked up.
-- **Use ID range**: limits generation to a specific ID range.
-- **Frame delay (ms)**: sets the fallback delay between frames when the `DAT` file does not provide enhanced timing data.
-- **Workers**: controls how many workers are used to process items in parallel.
-
-### GIF timing
-
-When the `DAT` file contains enhanced animation data, the application uses the per-frame timings stored in the file itself.
-If that data is not available, the program uses the value defined in **Frame delay (ms)**.
-
-## File integrity
-
-The **Check integrity** button checks the official project repository at:
-
-- [`LeoTKBR/tk-dev-tools`](https://github.com/LeoTKBR/tk-dev-tools)
-
-It compares the local files against the official GitHub tree and, if it finds any mismatch, downloads the problem file again to restore the correct version.
-
-## Project structure
-
-- [`launcher.py`](launcher.py): application entry point
-- [`bootstrap_ui.py`](bootstrap_ui.py): Qt setup window for dependency installation
-- [`dependency_bootstrap.py`](dependency_bootstrap.py): dependency detection helpers
-- [`qt_ui.py`](qt_ui.py): Qt interface
-- [`generation_core.py`](generation_core.py): GIF generation logic
-- [`dat_core.py`](dat_core.py): `DAT` reading and parsing
-- [`spr_core.py`](spr_core.py): `SPR` reading and parsing
-- [`core_types.py`](core_types.py): shared project types
-
-## Next steps
-
-The project is designed to grow with new tools focused on admin workflow.
-GIF Generator is only the first module in that foundation.
+- The `dist/` folder is generated by Vite and should not be edited manually.
+- The `src-tauri/target/` folder is generated by Rust/Tauri builds and can be safely recreated.
+- If Windows shows an old icon after rebuilding, it may be a shell cache issue rather than a build issue.
